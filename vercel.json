@@ -1,0 +1,30 @@
+{
+  "name": "israeli-geriatrics-education",
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "ANTHROPIC_API_KEY": "@anthropic-api-key",
+    "SZMC_LIBRARY_API_KEY": "@szmc-library-api-key",
+    "SZMC_ACCESS_TOKEN": "@szmc-access-token",
+    "ANALYZER_URL": "https://israeli-geriatrics-analyzer.vercel.app"
+  },
+  "build": {
+    "env": {
+      "NODE_ENV": "production"
+    }
+  },
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "regions": ["iad1"],
+  "github": {
+    "autoAlias": true
+  }
+}
