@@ -31,6 +31,7 @@ export default function Dashboard() {
   const [articles, setArticles] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [researchLoading, setResearchLoading] = useState(false)
+  const [exportLoading, setExportLoading] = useState(false)
 
   const analyzeCase = async () => {
     if (!clinicalText.trim()) return
@@ -100,6 +101,74 @@ export default function Dashboard() {
     }
   }
 
+  const exportMorningReport = async () => {
+    setExportLoading(true)
+    try {
+      const reportData = {
+        date: new Date().toLocaleDateString('he-IL'),
+        analysis: analysis,
+        clinicalText: clinicalText,
+        articles: articles
+      }
+      
+      // Create downloadable report
+      const dataStr = JSON.stringify(reportData, null, 2)
+      const dataBlob = new Blob([dataStr], { type: 'application/json' })
+      const url = URL.createObjectURL(dataBlob)
+      
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `geriatrics-report-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      
+      alert('דוח הבוקר נוצר בהצלחה!')
+    } catch (error) {
+      console.error('Export failed:', error)
+      alert('שגיאה ביצירת הדוח')
+    } finally {
+      setExportLoading(false)
+    }
+  }
+
+  const showEmergencyProtocols = () => {
+    const protocols = `
+פרוטוקולי חירום - גריאטריה
+
+🚨 נפילה עם חבלה:
+• בדיקת הכרה ויציבות המטופל
+• הערכת חבלות ראש/צוואר
+• בדיקת שברים - במיוחד ירך ופרק כף יד
+• צילומים לפי הצורך
+
+🧠 בלבול אקוטי:
+• זיהוי גורם מעורר (זיהום, תרופות, התייבשות)
+• בדיקות מעבדה מורחבות
+• הערכה נוירולוגית מהירה
+• שינוי/הפסקת תרופות חשודות
+
+💊 תופעות לוואי תרופתיות:
+• זיהוי אינטראקציות תרופתיות
+• התאמת מינונים לגיל ולתפקוד כליות
+• מעקב אחר תרופות בעלות חלון טיפולי צר
+
+📞 יצירת קשר: חדר מיון גריאטריה - 02-6777777
+    `
+    alert(protocols)
+  }
+
+  const clearAllData = () => {
+    if (window.confirm('האם אתה בטוח שברצונך לנקות את כל הנתונים? פעולה זו אינה הפיכה.')) {
+      setClinicalText('')
+      setAnalysis(null)
+      setArticles([])
+      localStorage.clear()
+      alert('כל הנתונים נוקו בהצלחה')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -126,6 +195,46 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Quick Actions */}
+        <div className="mb-8">
+          <div className="medical-card p-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center">
+              <Target className="w-5 h-5 ml-2 rtl:ml-0 rtl:mr-2 text-medical-600" />
+              פעולות מהירות
+            </h2>
+            <div className="flex flex-wrap gap-4">
+              <button
+                onClick={exportMorningReport}
+                disabled={exportLoading}
+                className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors flex items-center"
+              >
+                {exportLoading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white ml-2 rtl:ml-0 rtl:mr-2"></div>
+                ) : (
+                  <span className="ml-2 rtl:ml-0 rtl:mr-2">📊</span>
+                )}
+                יצוא דוח בוקר
+              </button>
+              
+              <button
+                onClick={showEmergencyProtocols}
+                className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center"
+              >
+                <span className="ml-2 rtl:ml-0 rtl:mr-2">🚨</span>
+                פרוטוקולי חירום
+              </button>
+              
+              <button
+                onClick={clearAllData}
+                className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-center"
+              >
+                <span className="ml-2 rtl:ml-0 rtl:mr-2">🗑️</span>
+                נקה את כל הנתונים
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Input Panel */}
